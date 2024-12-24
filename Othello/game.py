@@ -19,7 +19,7 @@ pion_blanc = pygame.image.load(os.path.join(current_path, "assets/WhiteToken.png
 
 # Créer la fenêtre
 fenetre = pygame.display.set_mode((TAILLE_FENETRE, TAILLE_FENETRE))
-pygame.display.set_caption("Othello")
+pygame.display.set_caption("Othello - Joueur vs Joueur")
 
 # Redimensionner les pions pour qu'ils s'adaptent aux cases
 pion_noir = pygame.transform.scale(pion_noir, (TAILLE_CASE, TAILLE_CASE))

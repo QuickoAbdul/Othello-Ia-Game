@@ -58,7 +58,7 @@ class Menu:
             subprocess.Popen(['python', chemin_game])
             return "joueur_vs_joueur"
         if self.bouton_joueur_vs_ia.collidepoint(souris_x, souris_y):
-            chemin_game = os.path.join(os.path.dirname(__file__), 'game.py')
+            chemin_game = os.path.join(os.path.dirname(__file__), 'gameia.py')
             subprocess.Popen(['python', chemin_game])
             return "joueur_vs_ia"
         if self.bouton_ia_vs_ia.collidepoint(souris_x, souris_y):
