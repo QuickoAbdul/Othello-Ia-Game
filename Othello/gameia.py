@@ -1,4 +1,4 @@
-import pygame
+import pygame, os
 import sys
 from ai import trouver_coup_valide, mouvement_valide
 
@@ -6,10 +6,13 @@ from ai import trouver_coup_valide, mouvement_valide
 pygame.init()
 
 # Paramètres de la fenêtre et du plateau
-TAILLE_FENETRE = 640
+TAILLE_FENETRE = 800
 TAILLE_CASE = TAILLE_FENETRE // 8
 COULEUR_FOND = (34, 139, 34)
 COULEUR_LIGNE = (0, 0, 0)
+
+#Liste pour historique des coups
+historique = []
 
 fenetre = pygame.display.set_mode((TAILLE_FENETRE, TAILLE_FENETRE))
 pygame.display.set_caption("Othello - Joueur vs IA")
@@ -120,8 +123,51 @@ def jouer_mouvement(x, y, joueur):
     if est_mouvement_valide(x, y, joueur):
         plateau[x][y] = joueur
         retourner_pions(x, y, joueur)
+         # Ajouter le coup à l'historique
+        historique.append({"joueur": joueur, "position": (x, y)})
         return True
     return False
+
+def afficher_historique():
+    """Affiche l'historique des coups joués."""
+    print("\nHistorique des coups :")
+    for index, coup in enumerate(historique, start=1):
+        joueur = "Joueur (Blanc)" if coup["joueur"] == "blanc" else "IA (Noir)"
+        position = coup["position"]
+        print(f"{index}. {joueur} a joué en position {position}")
+
+def afficher_historique_interface():
+    """Met à jour l'historique affiché dans l'interface."""
+    y_offset = 10
+    for index, coup in enumerate(historique[-10:], start=1):  # Afficher les 10 derniers coups
+        joueur = "Blanc" if coup["joueur"] == "blanc" else "Noir"
+        position = coup["position"]
+        texte = f"{index}. {joueur} -> {position}"
+        texte_surface = pygame.font.SysFont(None, 24).render(texte, True, (255, 255, 255))
+        fenetre.blit(texte_surface, (650, y_offset))
+        y_offset += 30
+
+def sauvegarder_historique():
+    """Sauvegarde l'historique des coups dans un fichier unique."""
+    base_name = "historique_coups"
+    extension = ".txt"
+    index = 1
+
+    # Créer un nom de fichier unique
+    while os.path.exists(f"{base_name}_{index}{extension}"):
+        index += 1
+
+    file_name = f"{base_name}_{index}{extension}"
+
+    # Écrire dans le fichier
+    with open(file_name, "w") as f:
+        f.write("Historique des coups joues :\n")
+        for idx, coup in enumerate(historique, start=1):
+            joueur = "Joueur (Blanc)" if coup["joueur"] == "blanc" else "IA (Noir)"
+            position = coup["position"]
+            f.write(f"{idx}. {joueur} a joue en position {position}\n")
+
+    print(f"Historique sauvegard dans le fichier : {file_name}")
 
 # Boucle principale du jeu
 tour_actuel = "joueur"
@@ -136,6 +182,7 @@ while running:
             grille_x = souris_y // TAILLE_CASE
             grille_y = souris_x // TAILLE_CASE
             if jouer_mouvement(grille_x, grille_y, "blanc"):
+                afficher_historique()  # Afficher l'historique
                 tour_actuel = "ia"
 
     if tour_actuel == "ia":
@@ -148,11 +195,15 @@ while running:
     dessiner_plateau()
     dessiner_pions()
     afficher_score()
+    afficher_historique_interface()
 
     if jeu_fini():
         afficher_resultat_final()
+        pygame.time.wait(8000)
+        sauvegarder_historique()
+        running = False
 
-    pygame.display.flip()
+    pygame.display.flip() # Mettre à jour l'affichage
 
 pygame.quit()
 sys.exit()
