@@ -6,7 +6,7 @@ from ai import trouver_coup_valide, mouvement_valide
 pygame.init()
 
 # Paramètres de la fenêtre et du plateau
-TAILLE_FENETRE = 800
+TAILLE_FENETRE = 600
 TAILLE_CASE = TAILLE_FENETRE // 8
 COULEUR_FOND = (34, 139, 34)
 COULEUR_LIGNE = (0, 0, 0)
@@ -142,10 +142,10 @@ def afficher_historique_interface():
     for index, coup in enumerate(historique[-10:], start=1):  # Afficher les 10 derniers coups
         joueur = "Blanc" if coup["joueur"] == "blanc" else "Noir"
         position = coup["position"]
-        texte = f"{index}. {joueur} -> {position}"
+        texte = f"{(index)}. {joueur} : {position}"
         texte_surface = pygame.font.SysFont(None, 24).render(texte, True, (255, 255, 255))
-        fenetre.blit(texte_surface, (650, y_offset))
-        y_offset += 30
+        fenetre.blit(texte_surface, (475, y_offset))
+        y_offset += 25
 
 def sauvegarder_historique():
     """Sauvegarde l'historique des coups dans un fichier unique."""
