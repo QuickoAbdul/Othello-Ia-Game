@@ -1,6 +1,6 @@
 import pygame, os
 import sys
-from ai import trouver_coup_valide, mouvement_valide
+from ai import trouver_coup_valide
 
 # Initialisation de Pygame
 pygame.init()
