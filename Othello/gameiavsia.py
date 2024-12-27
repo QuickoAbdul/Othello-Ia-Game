@@ -113,6 +113,7 @@ while running:
             x, y = coup
             plateau[x][y] = tour_actuel
             retourner_pions(x, y, tour_actuel)
+            pygame.time.wait(500)  # Délai de 50 ms pour chaque étape de l'animation
             tour_actuel = "blanc" if tour_actuel == "noir" else "noir"
     else:
         afficher_resultat_final()
