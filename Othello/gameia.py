@@ -149,26 +149,54 @@ def afficher_historique_interface():
         y_offset += 25
 
 def sauvegarder_historique():
-    """Sauvegarde l'historique des coups dans un fichier unique."""
+    """Sauvegarde l'historique des coups et le résultat dans un fichier unique."""
     base_name = "historique_coups"
     extension = ".txt"
     index = 1
 
-    # Créer un nom de fichier unique
+    # Charger la configuration de l'IA
+    try:
+        with open("config_ia.json", "r") as f:
+            config_ia = json.load(f)
+        mode_ia = config_ia["mode"]
+        profondeur = config_ia["profondeur"]
+    except:
+        mode_ia = "all"
+        profondeur = 2
+
     while os.path.exists(f"{base_name}_{index}{extension}"):
         index += 1
 
     file_name = f"{base_name}_{index}{extension}"
+    
+    # Calculer le score final
+    score_noir, score_blanc = calculer_score()
+    if score_noir > score_blanc:
+        gagnant = "IA (Noir)"
+    elif score_blanc > score_noir:
+        gagnant = "Joueur (Blanc)"
+    else:
+        gagnant = "Match nul"
 
     # Écrire dans le fichier
     with open(file_name, "w") as f:
+        # Ajouter la configuration de l'IA au début
+        f.write("Configuration de l'IA:\n")
+        f.write(f"Stratégie: {mode_ia}\n")
+        f.write(f"Profondeur de recherche: {profondeur}\n\n")
+        
         f.write("Historique des coups joues :\n")
         for idx, coup in enumerate(historique, start=1):
             joueur = "Joueur (Blanc)" if coup["joueur"] == "blanc" else "IA (Noir)"
             position = coup["position"]
             f.write(f"{idx}. {joueur} a joue en position {position}\n")
+        
+        # Ajouter le résultat final
+        f.write(f"\nRésultat final:\n")
+        f.write(f"Score final - Noir: {score_noir} | Blanc: {score_blanc}\n")
+        f.write(f"Gagnant: {gagnant}")
 
-    print(f"Historique sauvegard dans le fichier : {file_name}")
+    print(f"Historique sauvegarde dans le fichier : {file_name}")
 
 # Ajout de la stratégie d'évaluation
 def evaluer_position(plateau):
@@ -317,6 +345,7 @@ def afficher_message_tour_passe(joueur):
 tour_actuel = "joueur"
 coups_passes = 0  # Compteur pour suivre les passages de tour consécutifs
 running = True
+# Dans la boucle principale du jeu
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -329,7 +358,14 @@ while running:
                 grille_y = souris_x // TAILLE_CASE
                 if jouer_mouvement(grille_x, grille_y, "blanc"):
                     afficher_historique()
-                    coups_passes = 0  # Réinitialiser le compteur
+                    # Forcer l'affichage après le coup du joueur
+                    dessiner_plateau()
+                    dessiner_pions()
+                    afficher_score()
+                    afficher_historique_interface()
+                    pygame.display.flip()
+                    
+                    coups_passes = 0
                     tour_actuel = "ia"
             else:
                 print("Le joueur ne peut pas jouer - Tour passé")
@@ -342,30 +378,45 @@ while running:
             coup = trouver_meilleur_coup(plateau, 2, "noir")
             if coup:
                 jouer_mouvement(coup[0], coup[1], "noir")
-                coups_passes = 0  # Réinitialiser le compteur
+                # Forcer l'affichage après le coup de l'IA
+                dessiner_plateau()
+                dessiner_pions()
+                afficher_score()
+                afficher_historique_interface()
+                pygame.display.flip()
+                
+                coups_passes = 0
         else:
             print("L'IA ne peut pas jouer - Tour passé")
             afficher_message_tour_passe("IA")
             coups_passes += 1
         tour_actuel = "joueur"
 
-    dessiner_plateau()
-    dessiner_pions()
-    afficher_score()
-    afficher_historique_interface()
-
-    # Si deux passages de tour consécutifs ou plateau plein, le jeu est terminé
+    # Si deux passages de tour consécutifs ou plateau plein
     if coups_passes >= 2 or jeu_fini():
-        afficher_resultat_final()
-        pygame.time.wait(8000)
-        sauvegarder_historique()
         dessiner_plateau()
         dessiner_pions()
         afficher_score()
         afficher_historique_interface()
+        afficher_resultat_final()
+        pygame.display.flip()
+        pygame.time.wait(3000)  # Attendre 3 secondes
+        sauvegarder_historique()
         running = False
+    else:
+        # Mise à jour normale de l'affichage
+        dessiner_plateau()
+        dessiner_pions()
+        afficher_score()
+        afficher_historique_interface()
+        pygame.display.flip()
 
-    pygame.display.flip()
-
+# Avant de quitter, s'assurer que tout est bien affiché une dernière fois
+dessiner_plateau()
+dessiner_pions()
+afficher_score()
+afficher_historique_interface()
+pygame.display.flip()
+pygame.time.wait(1000)  # Attendre une seconde supplémentaire
 pygame.quit()
 sys.exit()
