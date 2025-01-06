@@ -12,28 +12,36 @@ class Menu:
         self.police_petite = pygame.font.Font(None, 24)
 
         # Rectangles des boutons principaux
-        self.bouton_joueur_vs_joueur = pygame.Rect(200, 150, 240, 50)
-        self.bouton_joueur_vs_ia = pygame.Rect(200, 230, 240, 50)
-        self.bouton_ia_vs_ia = pygame.Rect(200, 310, 240, 50)
+        self.bouton_joueur_vs_joueur = pygame.Rect(200, 100, 240, 50)
+        self.bouton_joueur_vs_ia = pygame.Rect(200, 160, 240, 50)
+        self.bouton_ia_vs_ia = pygame.Rect(200, 220, 240, 50)
 
-        # Options IA
-        self.mode_ia = "tout"  # "position", "mobilite", "absolu", "tout"
-        self.profondeur = 2
-        
-        # Boutons pour les options IA
-        self.boutons_mode = {
-            "position": pygame.Rect(50, 400, 120, 30),
-            "mobilite": pygame.Rect(180, 400, 120, 30),
-            "absolu": pygame.Rect(310, 400, 120, 30),
-            "tout": pygame.Rect(440, 400, 120, 30)
+        # Options pour l'IA Noire
+        self.mode_ia_noir = "tout"
+        self.profondeur_noir = 2
+        self.boutons_mode_noir = {
+            "position": pygame.Rect(50, 320, 120, 30),
+            "mobilite": pygame.Rect(180, 320, 120, 30),
+            "absolu": pygame.Rect(310, 320, 120, 30),
+            "mixte": pygame.Rect(440, 320, 120, 30)
         }
-        
-        # Boutons pour la profondeur
-        self.bouton_prof_minus = pygame.Rect(200, 450, 30, 30)
-        self.bouton_prof_plus = pygame.Rect(300, 450, 30, 30)
+        self.bouton_prof_minus_noir = pygame.Rect(200, 370, 30, 30)
+        self.bouton_prof_plus_noir = pygame.Rect(300, 370, 30, 30)
 
-        # Case à cocher
-        self.case_a_cocher = pygame.Rect(200, 500, 20, 20)
+        # Options pour l'IA Blanche
+        self.mode_ia_blanc = "tout"
+        self.profondeur_blanc = 2
+        self.boutons_mode_blanc = {
+            "position": pygame.Rect(50, 450, 120, 30),
+            "mobilite": pygame.Rect(180, 450, 120, 30),
+            "absolu": pygame.Rect(310, 450, 120, 30),
+            "mixte": pygame.Rect(440, 450, 120, 30)
+        }
+        self.bouton_prof_minus_blanc = pygame.Rect(200, 500, 30, 30)
+        self.bouton_prof_plus_blanc = pygame.Rect(300, 500, 30, 30)
+
+        # Case à cocher pour les indications visuelles
+        self.case_a_cocher = pygame.Rect(200, 550, 20, 20)
         self.cochee = False
 
     def afficher(self):
@@ -53,24 +61,43 @@ class Menu:
             texte_surface = self.police.render(texte, True, (255, 255, 255))
             self.fenetre.blit(texte_surface, (bouton.x + 10, bouton.y + 10))
 
-        # Affichage des options IA
-        titre_options = self.police.render("Options IA", True, (0, 0, 0))
-        self.fenetre.blit(titre_options, (50, 360))
+        # Titre options IA Noire
+        titre_options_noir = self.police.render("Options IA Noire", True, (0, 0, 0))
+        self.fenetre.blit(titre_options_noir, (50, 280))
 
-        # Affichage des boutons de mode
-        for mode, bouton in self.boutons_mode.items():
-            couleur = (0, 200, 0) if self.mode_ia == mode else (150, 150, 150)
+        # Affichage des boutons de mode IA Noire
+        for mode, bouton in self.boutons_mode_noir.items():
+            couleur = (0, 200, 0) if self.mode_ia_noir == mode else (150, 150, 150)
             pygame.draw.rect(self.fenetre, couleur, bouton)
             texte = self.police_petite.render(mode, True, (255, 255, 255))
             self.fenetre.blit(texte, (bouton.x + 5, bouton.y + 5))
 
-        # Affichage de la profondeur
-        pygame.draw.rect(self.fenetre, (150, 150, 150), self.bouton_prof_minus)
-        pygame.draw.rect(self.fenetre, (150, 150, 150), self.bouton_prof_plus)
-        self.fenetre.blit(self.police.render("-", True, (0, 0, 0)), (self.bouton_prof_minus.x + 10, self.bouton_prof_minus.y))
-        self.fenetre.blit(self.police.render("+", True, (0, 0, 0)), (self.bouton_prof_plus.x + 10, self.bouton_prof_plus.y))
-        prof_texte = self.police.render(f"Profondeur: {self.profondeur}", True, (0, 0, 0))
-        self.fenetre.blit(prof_texte, (240, 455))
+        # Profondeur IA Noire
+        pygame.draw.rect(self.fenetre, (150, 150, 150), self.bouton_prof_minus_noir)
+        pygame.draw.rect(self.fenetre, (150, 150, 150), self.bouton_prof_plus_noir)
+        self.fenetre.blit(self.police.render("-", True, (0, 0, 0)), (self.bouton_prof_minus_noir.x + 10, self.bouton_prof_minus_noir.y))
+        self.fenetre.blit(self.police.render("+", True, (0, 0, 0)), (self.bouton_prof_plus_noir.x + 10, self.bouton_prof_plus_noir.y))
+        prof_texte_noir = self.police.render(f"Profondeur: {self.profondeur_noir}", True, (0, 0, 0))
+        self.fenetre.blit(prof_texte_noir, (240, 375))
+
+        # Titre options IA Blanche
+        titre_options_blanc = self.police.render("Options IA Blanche", True, (0, 0, 0))
+        self.fenetre.blit(titre_options_blanc, (50, 410))
+
+        # Affichage des boutons de mode IA Blanche
+        for mode, bouton in self.boutons_mode_blanc.items():
+            couleur = (0, 200, 0) if self.mode_ia_blanc == mode else (150, 150, 150)
+            pygame.draw.rect(self.fenetre, couleur, bouton)
+            texte = self.police_petite.render(mode, True, (255, 255, 255))
+            self.fenetre.blit(texte, (bouton.x + 5, bouton.y + 5))
+
+        # Profondeur IA Blanche
+        pygame.draw.rect(self.fenetre, (150, 150, 150), self.bouton_prof_minus_blanc)
+        pygame.draw.rect(self.fenetre, (150, 150, 150), self.bouton_prof_plus_blanc)
+        self.fenetre.blit(self.police.render("-", True, (0, 0, 0)), (self.bouton_prof_minus_blanc.x + 10, self.bouton_prof_minus_blanc.y))
+        self.fenetre.blit(self.police.render("+", True, (0, 0, 0)), (self.bouton_prof_plus_blanc.x + 10, self.bouton_prof_plus_blanc.y))
+        prof_texte_blanc = self.police.render(f"Profondeur: {self.profondeur_blanc}", True, (0, 0, 0))
+        self.fenetre.blit(prof_texte_blanc, (240, 505))
 
         # Case à cocher et son texte
         pygame.draw.rect(self.fenetre, (0, 0, 0), self.case_a_cocher, 2)
@@ -84,27 +111,47 @@ class Menu:
         texte_case = self.police.render("Indications visuelles", True, (0, 0, 0))
         self.fenetre.blit(texte_case, (self.case_a_cocher.x + 30, self.case_a_cocher.y - 5))
 
-    def sauvegarder_config_ia(self):
-        config = {
-            "mode": self.mode_ia,
-            "profondeur": self.profondeur
+    def sauvegarder_configs_ia(self):
+        config_noir = {
+            "mode": self.mode_ia_noir,
+            "profondeur": self.profondeur_noir
         }
-        with open("config_ia.json", "w") as f:
-            json.dump(config, f)
+        config_blanc = {
+            "mode": self.mode_ia_blanc,
+            "profondeur": self.profondeur_blanc
+        }
+        with open("config_ia_noir.json", "w") as f:
+            json.dump(config_noir, f)
+        with open("config_ia_blanc.json", "w") as f:
+            json.dump(config_blanc, f)
 
     def gestion_clic(self, souris_x, souris_y):
-        # Gestion des boutons de mode IA
-        for mode, bouton in self.boutons_mode.items():
+        # Gestion des boutons de mode IA Noire
+        for mode, bouton in self.boutons_mode_noir.items():
             if bouton.collidepoint(souris_x, souris_y):
-                self.mode_ia = mode
+                self.mode_ia_noir = mode
                 return None
 
-        # Gestion des boutons de profondeur
-        if self.bouton_prof_minus.collidepoint(souris_x, souris_y):
-            self.profondeur = max(1, self.profondeur - 1)
+        # Gestion des boutons de mode IA Blanche
+        for mode, bouton in self.boutons_mode_blanc.items():
+            if bouton.collidepoint(souris_x, souris_y):
+                self.mode_ia_blanc = mode
+                return None
+
+        # Gestion des boutons de profondeur IA Noire
+        if self.bouton_prof_minus_noir.collidepoint(souris_x, souris_y):
+            self.profondeur_noir = max(1, self.profondeur_noir - 1)
             return None
-        if self.bouton_prof_plus.collidepoint(souris_x, souris_y):
-            self.profondeur = min(5, self.profondeur + 1)
+        if self.bouton_prof_plus_noir.collidepoint(souris_x, souris_y):
+            self.profondeur_noir = min(5, self.profondeur_noir + 1)
+            return None
+
+        # Gestion des boutons de profondeur IA Blanche
+        if self.bouton_prof_minus_blanc.collidepoint(souris_x, souris_y):
+            self.profondeur_blanc = max(1, self.profondeur_blanc - 1)
+            return None
+        if self.bouton_prof_plus_blanc.collidepoint(souris_x, souris_y):
+            self.profondeur_blanc = min(5, self.profondeur_blanc + 1)
             return None
 
         # Gestion des boutons principaux
@@ -113,11 +160,12 @@ class Menu:
             subprocess.Popen(['python', chemin_game])
             return "joueur_vs_joueur"
         if self.bouton_joueur_vs_ia.collidepoint(souris_x, souris_y):
-            self.sauvegarder_config_ia()
+            self.sauvegarder_configs_ia()
             chemin_game = os.path.join(os.path.dirname(__file__), 'gameia.py')
             subprocess.Popen(['python', chemin_game])
             return "joueur_vs_ia"
         if self.bouton_ia_vs_ia.collidepoint(souris_x, souris_y):
+            self.sauvegarder_configs_ia()
             chemin_game = os.path.join(os.path.dirname(__file__), 'gameiavsia.py')
             subprocess.Popen(['python', chemin_game])
             return "ia_vs_ia"

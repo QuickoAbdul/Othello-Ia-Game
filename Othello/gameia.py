@@ -1,7 +1,10 @@
-import json
-import pygame, os
+import pygame
 import sys
-from ai import trouver_coup_valide
+import json
+import os
+import time
+from dataclasses import dataclass
+from copy import deepcopy
 
 # Initialisation de Pygame
 pygame.init()
@@ -31,6 +34,39 @@ plateau[3][4] = plateau[4][3] = "noir"
 
 # Initialiser la police pour l'affichage du score
 font = pygame.font.Font(None, 36)
+
+@dataclass
+class IAStats:
+    """Classe pour stocker les statistiques de l'IA"""
+    nodes_explored: int = 0
+    total_time: float = 0
+    moves_count: int = 0
+    
+    def average_time_per_move(self):
+        return self.total_time / self.moves_count if self.moves_count > 0 else 0
+    
+    def average_nodes_per_move(self):
+        return self.nodes_explored / self.moves_count if self.moves_count > 0 else 0
+    
+    def add_move_stats(self, nodes: int, time: float):
+        """Ajoute les statistiques d'un coup"""
+        self.nodes_explored += nodes
+        self.total_time += time
+        self.moves_count += 1
+
+class NodeCounter:
+    """Classe pour compter les nœuds explorés"""
+    def __init__(self):
+        self.count = 0
+    
+    def increment(self):
+        self.count += 1
+        
+    def get_count(self):
+        return self.count
+
+# Configuration de l'IA et stats
+ia_stats = IAStats()
 
 def dessiner_plateau():
     """Dessine le plateau avec un fond vert et des lignes noires."""
@@ -64,37 +100,40 @@ def afficher_score():
     pygame.draw.rect(fenetre, (0, 0, 0), (5, 5, rect_largeur, rect_hauteur))
     fenetre.blit(texte, (10, 10))
 
-def est_mouvement_valide(x, y, joueur):
+def est_mouvement_valide(x, y, joueur, plateau_jeu=None):
     """Vérifie si un mouvement est valide pour un joueur à une position donnée."""
-    if plateau[x][y] != " ":
+    plateau_courant = plateau_jeu if plateau_jeu is not None else plateau
+    
+    if plateau_courant[x][y] != " ":
         return False
     autre_joueur = "noir" if joueur == "blanc" else "blanc"
     directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
     for dx, dy in directions:
         nx, ny = x + dx, y + dy
         trouvé_adverse = False
-        while 0 <= nx < 8 and 0 <= ny < 8 and plateau[nx][ny] == autre_joueur:
+        while 0 <= nx < 8 and 0 <= ny < 8 and plateau_courant[nx][ny] == autre_joueur:
             trouvé_adverse = True
             nx += dx
             ny += dy
-        if trouvé_adverse and 0 <= nx < 8 and 0 <= ny < 8 and plateau[nx][ny] == joueur:
+        if trouvé_adverse and 0 <= nx < 8 and 0 <= ny < 8 and plateau_courant[nx][ny] == joueur:
             return True
     return False
 
-def retourner_pions(x, y, joueur):
+def retourner_pions(x, y, joueur, plateau_jeu=None):
     """Retourne les pions adverses après un coup valide."""
+    plateau_courant = plateau_jeu if plateau_jeu is not None else plateau
     autre_joueur = "noir" if joueur == "blanc" else "blanc"
     directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
     for dx, dy in directions:
         nx, ny = x + dx, y + dy
         pions_a_retourner = []
-        while 0 <= nx < 8 and 0 <= ny < 8 and plateau[nx][ny] == autre_joueur:
+        while 0 <= nx < 8 and 0 <= ny < 8 and plateau_courant[nx][ny] == autre_joueur:
             pions_a_retourner.append((nx, ny))
             nx += dx
             ny += dy
-        if 0 <= nx < 8 and 0 <= ny < 8 and plateau[nx][ny] == joueur:
+        if 0 <= nx < 8 and 0 <= ny < 8 and plateau_courant[nx][ny] == joueur:
             for (rx, ry) in pions_a_retourner:
-                plateau[rx][ry] = joueur
+                plateau_courant[rx][ry] = joueur
 
 def jeu_fini():
     """Vérifie si le jeu est terminé."""
@@ -119,13 +158,17 @@ def afficher_resultat_final():
     pygame.draw.rect(fenetre, (0, 0, 0), (TAILLE_FENETRE // 2 - rect_largeur // 2, TAILLE_FENETRE // 2 - rect_hauteur // 2, rect_largeur, rect_hauteur))
     fenetre.blit(texte, (TAILLE_FENETRE // 2 - texte.get_width() // 2, TAILLE_FENETRE // 2 - texte.get_height() // 2))
 
-def jouer_mouvement(x, y, joueur):
-    """Permet au joueur actuel de jouer un coup à la position (x, y) si le mouvement est valide."""
-    if est_mouvement_valide(x, y, joueur):
-        plateau[x][y] = joueur
-        retourner_pions(x, y, joueur)
-        # Ajouter le coup à l'historique
-        historique.append({"joueur": joueur, "position": (x, y)})
+def jouer_mouvement(x, y, joueur, plateau_jeu=None):
+    """Permet au joueur actuel de jouer un coup à la position (x, y) si le mouvement est valide.
+    Si plateau_jeu est spécifié, joue le coup sur ce plateau. Sinon, utilise le plateau global."""
+    plateau_courant = plateau_jeu if plateau_jeu is not None else plateau
+    
+    if est_mouvement_valide(x, y, joueur, plateau_courant):
+        plateau_courant[x][y] = joueur
+        retourner_pions(x, y, joueur, plateau_courant)
+        # Ajouter le coup à l'historique seulement si on joue sur le plateau principal
+        if plateau_jeu is None:
+            historique.append({"joueur": joueur, "position": (x, y)})
         return True
     return False
 
@@ -149,54 +192,60 @@ def afficher_historique_interface():
         y_offset += 25
 
 def sauvegarder_historique():
-    """Sauvegarde l'historique des coups et le résultat dans un fichier unique."""
-    base_name = "historique_coups"
-    extension = ".txt"
+    """Version améliorée de la sauvegarde avec statistiques."""
+    base_name = "partie_joueur_vs_ia"
     index = 1
-
-    # Charger la configuration de l'IA
+    while os.path.exists(f"{base_name}_{index}.txt"):
+        index += 1
+    nom_fichier = f"{base_name}_{index}.txt"
+    
     try:
         with open("config_ia.json", "r") as f:
-            config_ia = json.load(f)
-        mode_ia = config_ia["mode"]
-        profondeur = config_ia["profondeur"]
-    except:
-        mode_ia = "all"
-        profondeur = 2
-
-    while os.path.exists(f"{base_name}_{index}{extension}"):
-        index += 1
-
-    file_name = f"{base_name}_{index}{extension}"
+            config = json.load(f)
+    except FileNotFoundError:
+        config = {"mode": "all", "profondeur": 2}
     
-    # Calculer le score final
-    score_noir, score_blanc = calculer_score()
-    if score_noir > score_blanc:
-        gagnant = "IA (Noir)"
-    elif score_blanc > score_noir:
-        gagnant = "Joueur (Blanc)"
-    else:
-        gagnant = "Match nul"
-
-    # Écrire dans le fichier
-    with open(file_name, "w") as f:
-        # Ajouter la configuration de l'IA au début
+    score_noir = sum(row.count("noir") for row in plateau)
+    score_blanc = sum(row.count("blanc") for row in plateau)
+    
+    with open(nom_fichier, "w", encoding='utf-8') as f:
         f.write("Configuration de l'IA:\n")
-        f.write(f"Stratégie: {mode_ia}\n")
-        f.write(f"Profondeur de recherche: {profondeur}\n\n")
+        f.write(f"Stratégie: {config['mode']}\n")
+        f.write(f"Profondeur de recherche: {config['profondeur']}\n\n")
         
-        f.write("Historique des coups joues :\n")
-        for idx, coup in enumerate(historique, start=1):
+        f.write("Statistiques de l'IA:\n")
+        f.write(f"- Nœuds totaux explorés: {ia_stats.nodes_explored:,}\n")
+        f.write(f"- Temps total de réflexion: {ia_stats.total_time:.2f} secondes\n")
+        f.write(f"- Nombre de coups joués: {ia_stats.moves_count}\n")
+        f.write(f"- Moyenne de nœuds par coup: {ia_stats.average_nodes_per_move():,.0f}\n")
+        f.write(f"- Temps moyen par coup: {ia_stats.average_time_per_move():.3f} secondes\n\n")
+        
+        f.write("Historique des coups:\n")
+        for i, coup in enumerate(historique, 1):
             joueur = "Joueur (Blanc)" if coup["joueur"] == "blanc" else "IA (Noir)"
-            position = coup["position"]
-            f.write(f"{idx}. {joueur} a joue en position {position}\n")
-        
-        # Ajouter le résultat final
-        f.write(f"\nRésultat final:\n")
-        f.write(f"Score final - Noir: {score_noir} | Blanc: {score_blanc}\n")
+            f.write(f"{i}. {joueur} a joué en {coup['position']}\n")
+            
+        f.write(f"\nScore final:\n")
+        f.write(f"Noir (IA): {score_noir}\n")
+        f.write(f"Blanc (Joueur): {score_blanc}\n")
+        gagnant = "IA (Noir)" if score_noir > score_blanc else "Joueur (Blanc)" if score_blanc > score_noir else "Match nul"
         f.write(f"Gagnant: {gagnant}")
 
-    print(f"Historique sauvegarde dans le fichier : {file_name}")
+def afficher_stats_interface():
+    """Affiche les statistiques de l'IA en temps réel."""
+    y_offset = 300
+    textes = [
+        f"Statistiques IA:",
+        f"Nœuds: {ia_stats.nodes_explored:,}",
+        f"Temps total: {ia_stats.total_time:.1f}s",
+        f"Coups: {ia_stats.moves_count}",
+        f"Nœuds/coup: {ia_stats.average_nodes_per_move():,.0f}"
+    ]
+    
+    for texte in textes:
+        surface_texte = font.render(texte, True, (255, 255, 255))
+        fenetre.blit(surface_texte, (10, y_offset))
+        y_offset += 25
 
 # Ajout de la stratégie d'évaluation
 def evaluer_position(plateau):
@@ -261,8 +310,10 @@ def evaluation(plateau, joueur):
     return score
 
 # Implémentation de l'algorithme Min-Max avec élagage alpha-beta
-def minimax(plateau, profondeur, alpha, beta, joueur):
-    """Retourne le meilleur coup basé sur Min-Max avec élagage alpha-beta."""
+def minimax(plateau, profondeur, alpha, beta, joueur, node_counter):
+    """Version améliorée de Minimax avec comptage des nœuds."""
+    node_counter.increment()
+    
     if profondeur == 0 or jeu_fini():
         return evaluation(plateau, joueur)
 
@@ -270,11 +321,10 @@ def minimax(plateau, profondeur, alpha, beta, joueur):
         max_eval = float("-inf")
         for x in range(8):
             for y in range(8):
-                if est_mouvement_valide(x, y, "noir"):
-                    # Simuler le coup
-                    plateau[x][y] = "noir"
-                    eval = minimax(plateau, profondeur - 1, alpha, beta, "blanc")
-                    plateau[x][y] = " "
+                if est_mouvement_valide(x, y, joueur):
+                    nouveau_plateau = deepcopy(plateau)
+                    jouer_mouvement(x, y, joueur, nouveau_plateau)
+                    eval = minimax(nouveau_plateau, profondeur - 1, alpha, beta, "blanc", node_counter)
                     max_eval = max(max_eval, eval)
                     alpha = max(alpha, eval)
                     if beta <= alpha:
@@ -284,11 +334,10 @@ def minimax(plateau, profondeur, alpha, beta, joueur):
         min_eval = float("inf")
         for x in range(8):
             for y in range(8):
-                if est_mouvement_valide(x, y, "blanc"):
-                    # Simuler le coup
-                    plateau[x][y] = "blanc"
-                    eval = minimax(plateau, profondeur - 1, alpha, beta, "noir")
-                    plateau[x][y] = " "
+                if est_mouvement_valide(x, y, joueur):
+                    nouveau_plateau = deepcopy(plateau)
+                    jouer_mouvement(x, y, joueur, nouveau_plateau)
+                    eval = minimax(nouveau_plateau, profondeur - 1, alpha, beta, "noir", node_counter)
                     min_eval = min(min_eval, eval)
                     beta = min(beta, eval)
                     if beta <= alpha:
@@ -296,25 +345,28 @@ def minimax(plateau, profondeur, alpha, beta, joueur):
         return min_eval
 
 def trouver_meilleur_coup(plateau, profondeur, joueur):
-    """Trouve le meilleur coup pour l'IA avec Min-Max."""
-    try:
-        with open("config_ia.json", "r") as f:
-            config = json.load(f)
-        profondeur = config["profondeur"]
-    except:
-        pass  # Utiliser la profondeur par défaut si le fichier n'existe pas
+    """Version améliorée de la recherche du meilleur coup avec stats."""
+    node_counter = NodeCounter()
+    debut_temps = time.time()
+    
     meilleur_coup = None
     meilleur_score = float("-inf") if joueur == "noir" else float("inf")
+    
     for x in range(8):
         for y in range(8):
             if est_mouvement_valide(x, y, joueur):
-                # Simuler le coup
-                plateau[x][y] = joueur
-                score = minimax(plateau, profondeur - 1, float("-inf"), float("inf"), "blanc" if joueur == "noir" else "noir")
-                plateau[x][y] = " "
+                nouveau_plateau = deepcopy(plateau)
+                jouer_mouvement(x, y, joueur, nouveau_plateau)
+                score = minimax(nouveau_plateau, profondeur - 1, float("-inf"), float("inf"),
+                              "blanc" if joueur == "noir" else "noir", node_counter)
+                
                 if (joueur == "noir" and score > meilleur_score) or (joueur == "blanc" and score < meilleur_score):
                     meilleur_score = score
                     meilleur_coup = (x, y)
+    
+    temps_ecoule = time.time() - debut_temps
+    ia_stats.add_move_stats(node_counter.get_count(), temps_ecoule)
+    
     return meilleur_coup
 
 def peut_jouer(joueur):
