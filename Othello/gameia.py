@@ -18,6 +18,7 @@ COULEUR_LIGNE = (0, 0, 0)
 # Liste pour historique des coups
 historique = []
 
+# Creatiuon de la fenêtre
 fenetre = pygame.display.set_mode((TAILLE_FENETRE, TAILLE_FENETRE))
 pygame.display.set_caption("Othello - Joueur vs IA")
 
@@ -35,9 +36,10 @@ plateau[3][4] = plateau[4][3] = "noir"
 # Initialiser la police pour l'affichage du score
 font = pygame.font.Font(None, 36)
 
+
+# Classe pour stocker les statistiques de l'IA
 @dataclass
 class IAStats:
-    """Classe pour stocker les statistiques de l'IA"""
     nodes_explored: int = 0
     total_time: float = 0
     moves_count: int = 0
@@ -54,8 +56,8 @@ class IAStats:
         self.total_time += time
         self.moves_count += 1
 
+# Classe pour compter les nœuds explorés
 class NodeCounter:
-    """Classe pour compter les nœuds explorés"""
     def __init__(self):
         self.count = 0
     
@@ -68,15 +70,15 @@ class NodeCounter:
 # Configuration de l'IA et stats
 ia_stats = IAStats()
 
+# Dessiner le plateau
 def dessiner_plateau():
-    """Dessine le plateau avec un fond vert et des lignes noires."""
     fenetre.fill(COULEUR_FOND)
     for x in range(0, TAILLE_FENETRE, TAILLE_CASE):
         pygame.draw.line(fenetre, COULEUR_LIGNE, (x, 0), (x, TAILLE_FENETRE))
         pygame.draw.line(fenetre, COULEUR_LIGNE, (0, x), (TAILLE_FENETRE, x))
 
+# Dessiner les pions sur le plateau
 def dessiner_pions():
-    """Dessine les pions sur le plateau."""
     for x in range(8):
         for y in range(8):
             if plateau[x][y] == "noir":
@@ -84,12 +86,13 @@ def dessiner_pions():
             elif plateau[x][y] == "blanc":
                 fenetre.blit(pion_blanc, (y * TAILLE_CASE, x * TAILLE_CASE))
 
+# Calculer le score des deux joueurs
 def calculer_score():
-    """Calcule le score des joueurs."""
     score_noir = sum(row.count("noir") for row in plateau)
     score_blanc = sum(row.count("blanc") for row in plateau)
     return score_noir, score_blanc
 
+# Afficher le score des deux joueurs sur le coté gauche
 def afficher_score():
     """Affiche le score des deux joueurs."""
     score_noir, score_blanc = calculer_score()
@@ -100,8 +103,8 @@ def afficher_score():
     pygame.draw.rect(fenetre, (0, 0, 0), (5, 5, rect_largeur, rect_hauteur))
     fenetre.blit(texte, (10, 10))
 
+# Vérifier si un mouvement est valide à une position donnée 'x, y'
 def est_mouvement_valide(x, y, joueur, plateau_jeu=None):
-    """Vérifie si un mouvement est valide pour un joueur à une position donnée."""
     plateau_courant = plateau_jeu if plateau_jeu is not None else plateau
     
     if plateau_courant[x][y] != " ":
@@ -119,8 +122,8 @@ def est_mouvement_valide(x, y, joueur, plateau_jeu=None):
             return True
     return False
 
+# Retourner les pions selon les règles après un mouvement valide (diagonales, verticales, horizontales)
 def retourner_pions(x, y, joueur, plateau_jeu=None):
-    """Retourne les pions adverses après un coup valide."""
     plateau_courant = plateau_jeu if plateau_jeu is not None else plateau
     autre_joueur = "noir" if joueur == "blanc" else "blanc"
     directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
@@ -135,16 +138,16 @@ def retourner_pions(x, y, joueur, plateau_jeu=None):
             for (rx, ry) in pions_a_retourner:
                 plateau_courant[rx][ry] = joueur
 
+# Fin jeu
 def jeu_fini():
-    """Vérifie si le jeu est terminé."""
     for x in range(8):
         for y in range(8):
             if plateau[x][y] == " " and (est_mouvement_valide(x, y, "noir") or est_mouvement_valide(x, y, "blanc")):
                 return False
     return True
 
+# Afficher le message de fin de partie
 def afficher_resultat_final():
-    """Affiche le résultat final du jeu."""
     score_noir, score_blanc = calculer_score()
     if score_noir > score_blanc:
         message = "Noir a gagné !"
@@ -158,9 +161,8 @@ def afficher_resultat_final():
     pygame.draw.rect(fenetre, (0, 0, 0), (TAILLE_FENETRE // 2 - rect_largeur // 2, TAILLE_FENETRE // 2 - rect_hauteur // 2, rect_largeur, rect_hauteur))
     fenetre.blit(texte, (TAILLE_FENETRE // 2 - texte.get_width() // 2, TAILLE_FENETRE // 2 - texte.get_height() // 2))
 
+# Permet de jouer un coup à la position (x, y) si le mouvement est valide.
 def jouer_mouvement(x, y, joueur, plateau_jeu=None):
-    """Permet au joueur actuel de jouer un coup à la position (x, y) si le mouvement est valide.
-    Si plateau_jeu est spécifié, joue le coup sur ce plateau. Sinon, utilise le plateau global."""
     plateau_courant = plateau_jeu if plateau_jeu is not None else plateau
     
     if est_mouvement_valide(x, y, joueur, plateau_courant):
@@ -172,16 +174,16 @@ def jouer_mouvement(x, y, joueur, plateau_jeu=None):
         return True
     return False
 
+# Affiche l'historique des coups joués.
 def afficher_historique():
-    """Affiche l'historique des coups joués."""
     print("\nHistorique des coups :")
     for index, coup in enumerate(historique, start=1):
         joueur = "Joueur (Blanc)" if coup["joueur"] == "blanc" else "IA (Noir)"
         position = coup["position"]
         print(f"{index}. {joueur} a joué en position {position}")
 
+# Affiche l'historique des coups dans l'interface graphique
 def afficher_historique_interface():
-    """Met à jour l'historique affiché dans l'interface."""
     y_offset = 10
     for index, coup in enumerate(historique[-10:], start=1):  # Afficher les 10 derniers coups
         joueur = "Blanc" if coup["joueur"] == "blanc" else "Noir"
@@ -191,8 +193,8 @@ def afficher_historique_interface():
         fenetre.blit(texte_surface, (475, y_offset))
         y_offset += 25
 
+# Sauvegarde l'historique de la partie dans un fichier texte
 def sauvegarder_historique():
-    """Version améliorée de la sauvegarde avec statistiques."""
     base_name = "partie_joueur_vs_ia"
     index = 1
     while os.path.exists(f"{base_name}_{index}.txt"):
@@ -231,8 +233,8 @@ def sauvegarder_historique():
         gagnant = "IA (Noir)" if score_noir > score_blanc else "Joueur (Blanc)" if score_blanc > score_noir else "Match nul"
         f.write(f"Gagnant: {gagnant}")
 
+# Affiche les statistiques de l'IA en temps réel
 def afficher_stats_interface():
-    """Affiche les statistiques de l'IA en temps réel."""
     y_offset = 300
     textes = [
         f"Statistiques IA:",
@@ -269,6 +271,7 @@ def evaluer_position(plateau):
             
     return score
 
+# Ajout de la stratégie d'évaluation de la mobilite 
 def evaluer_mobilite(plateau, joueur):
     """Retourne une évaluation basée sur la mobilité du joueur."""
     coups_possibles_joueur = 0
@@ -282,12 +285,14 @@ def evaluer_mobilite(plateau, joueur):
                     coups_possibles_adversaire += 1
     return coups_possibles_joueur - coups_possibles_adversaire
 
+# Ajout de la stratégie d'évaluation de la différence de pions
 def evaluer_diff_pions(plateau):
     """Retourne une évaluation basée sur la différence de nombre de pions."""
     score_noir = sum(row.count("noir") for row in plateau)
     score_blanc = sum(row.count("blanc") for row in plateau)
     return score_noir - score_blanc
 
+# Ajout de la fonction d'évaluation combinée
 def evaluation(plateau, joueur):
     """Combine plusieurs critères pour évaluer la position selon la configuration."""
     # Charger la configuration
@@ -345,7 +350,6 @@ def minimax(plateau, profondeur, alpha, beta, joueur, node_counter):
         return min_eval
 
 def trouver_meilleur_coup(plateau, profondeur, joueur):
-    """Version améliorée de la recherche du meilleur coup avec stats."""
     node_counter = NodeCounter()
     debut_temps = time.time()
     
@@ -369,6 +373,7 @@ def trouver_meilleur_coup(plateau, profondeur, joueur):
     
     return meilleur_coup
 
+# Vérifie si le joueur a au moins un coup valide possible
 def peut_jouer(joueur):
     """Vérifie si le joueur a au moins un coup valide possible."""
     for x in range(8):
@@ -377,8 +382,8 @@ def peut_jouer(joueur):
                 return True
     return False
 
+# Affiche un message pour indiquer que le tour est passé
 def afficher_message_tour_passe(joueur):
-    """Affiche un message quand un tour est passé."""
     message = f"Tour passé pour {joueur}"
     texte = font.render(message, True, (255, 255, 255))
     rect_largeur = texte.get_width() + 20
@@ -397,6 +402,7 @@ def afficher_message_tour_passe(joueur):
 tour_actuel = "joueur"
 coups_passes = 0  # Compteur pour suivre les passages de tour consécutifs
 running = True
+
 # Dans la boucle principale du jeu
 while running:
     for event in pygame.event.get():
