@@ -1,12 +1,17 @@
 # Othello - Jeu en Python avec PyGame
 
+---
+
+![othello](https://github.com/user-attachments/assets/a6ec2f7b-6799-41cc-906d-9aea9b8d4c94)
+
+
 ## 📌 Présentation
 
 Ce projet est une implémentation du jeu **Othello (Reversi)** en Python en utilisant **PyGame**. Il propose plusieurs modes de jeu :
 
 - **Joueur vs Joueur** 👥
 - **Joueur vs IA** 🤖
-- **IA vs IA** 🤖🤖 (avec algorithme Min-Max et élagage alpha-bêta)
+- **IA vs IA** 🤖🤖 (avec algorithme Min-Max et élagage alpha-bêta et choix de stratégie)
 
 Le projet inclut également un système d'historique des coups et enregistre les statistiques des parties jouées dans un fichier `.txt`.
 
@@ -19,7 +24,7 @@ Le projet inclut également un système d'historique des coups et enregistre les
 - 🧠 **Intelligence Artificielle avec Min-Max et élagage alpha-bêta**
 - 📝 **Historique des coups joués**
 - 📊 **Enregistrement des statistiques de l'IA** après chaque partie
-- 🎯 **Indication des coups possibles (option activable)**
+
 
 ---
 
@@ -62,8 +67,10 @@ python main.py
 L'IA repose sur l'algorithme **Min-Max avec élagage alpha-bêta**, optimisé par différentes stratégies d'évaluation :
 
 - **Positionnelle** : Utilisation d'une grille de poids pour donner de l'importance aux coins et aux bords.
-- **Mobilité** : Privilégier les coups qui maximisent les mouvements possibles et limitent ceux de l'adversaire.
-- **Différence de pions** : Calculer la différence entre les pions de l'IA et ceux de l'adversaire.
+- **Mobilité** : Privilégier les coups qui en prenant compte de la différence du nombre de pions.
+- **Absolu** : Calculer la différence entre les pions de l'IA et ceux de l'adversaire.
+- **Mixte** : Mélange des 3.
+
 
 L'IA peut jouer avec différentes profondeurs de recherche pour ajuster son niveau de difficulté.
 
@@ -87,6 +94,8 @@ Un historique des coups est sauvegardé dans un fichier `.txt` après chaque par
 - Victoires/défaites de l'IA
 - Score final de chaque partie
 - Nombre moyen de coups par partie
+- Noeud moyen exploré par l'IA
+- Temps moyen de calcul par coup
 
 Ces statistiques permettent d'évaluer les performances de l'IA sur le long terme.
 
