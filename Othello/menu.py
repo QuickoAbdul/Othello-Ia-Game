@@ -78,7 +78,7 @@ class Menu:
         self.fenetre.blit(self.police.render("-", True, (0, 0, 0)), (self.bouton_prof_minus_noir.x + 10, self.bouton_prof_minus_noir.y))
         self.fenetre.blit(self.police.render("+", True, (0, 0, 0)), (self.bouton_prof_plus_noir.x + 10, self.bouton_prof_plus_noir.y))
         prof_texte_noir = self.police.render(f"Profondeur: {self.profondeur_noir}", True, (0, 0, 0))
-        self.fenetre.blit(prof_texte_noir, (240, 375))
+        self.fenetre.blit(prof_texte_noir, (350, 375))
 
         # Titre options IA Blanche
         titre_options_blanc = self.police.render("Options IA Blanche", True, (0, 0, 0))
@@ -97,7 +97,7 @@ class Menu:
         self.fenetre.blit(self.police.render("-", True, (0, 0, 0)), (self.bouton_prof_minus_blanc.x + 10, self.bouton_prof_minus_blanc.y))
         self.fenetre.blit(self.police.render("+", True, (0, 0, 0)), (self.bouton_prof_plus_blanc.x + 10, self.bouton_prof_plus_blanc.y))
         prof_texte_blanc = self.police.render(f"Profondeur: {self.profondeur_blanc}", True, (0, 0, 0))
-        self.fenetre.blit(prof_texte_blanc, (240, 505))
+        self.fenetre.blit(prof_texte_blanc, (350, 505))
 
         # Case à cocher et son texte
         pygame.draw.rect(self.fenetre, (0, 0, 0), self.case_a_cocher, 2)
