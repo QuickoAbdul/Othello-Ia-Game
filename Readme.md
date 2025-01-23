@@ -38,7 +38,7 @@ Le projet inclut également un système d'historique des coups et enregistre les
 Cloner le dépôt et lancer le jeu :
 
 ```bash
-git clone <URL_DU_DEPOT>
+git clone <(https://github.com/QuickoAbdul/Othello-Ia-Game)>
 cd Othello_PyGame
 python main.py
 ```
@@ -103,9 +103,9 @@ Ces statistiques permettent d'évaluer les performances de l'IA sur le long term
 
 ## 📝 Auteurs
 
-Projet réalisé par **[Ton Nom]** dans le cadre d'un apprentissage sur l'IA et le jeu Othello.
+Projet réalisé par **[Shahzad Abdul Rahman]** dans le cadre d'un apprentissage sur l'IA et le jeu Othello.
 
-📧 Contact : [ton.email@example.com]
+📧 Contact : [shd.abdul29@example.com]
 
 ---
 
