@@ -2,8 +2,9 @@
 
 ---
 
-![othello](https://github.com/user-attachments/assets/a6ec2f7b-6799-41cc-906d-9aea9b8d4c94)
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a6ec2f7b-6799-41cc-906d-9aea9b8d4c94" alt="GIF Description">
+</p>
 
 ## 📌 Présentation
 
