@@ -22,9 +22,12 @@ historique = []
 fenetre = pygame.display.set_mode((TAILLE_FENETRE, TAILLE_FENETRE))
 pygame.display.set_caption("Othello - Joueur vs IA")
 
+# Current path
+current_path = os.path.dirname(__file__)
+
 # Charger les images des pions
-pion_noir = pygame.image.load("assets/BlackToken.png")
-pion_blanc = pygame.image.load("assets/WhiteToken.png")
+pion_noir = pygame.image.load(os.path.join(current_path, "assets/BlackToken.png"))
+pion_blanc = pygame.image.load(os.path.join(current_path, "assets/WhiteToken.png"))
 pion_noir = pygame.transform.scale(pion_noir, (TAILLE_CASE, TAILLE_CASE))
 pion_blanc = pygame.transform.scale(pion_blanc, (TAILLE_CASE, TAILLE_CASE))
 

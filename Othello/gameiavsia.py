@@ -19,6 +19,9 @@ COULEUR_LIGNE = (0, 0, 0)
 # Liste pour historique des coups
 historique = []
 
+# Chemin actuel du fichier
+current_path = os.path.dirname(__file__)
+
 fenetre = pygame.display.set_mode((TAILLE_FENETRE, TAILLE_FENETRE))
 pygame.display.set_caption("Othello - IA vs IA")
 
@@ -54,8 +57,8 @@ class NodeCounter:
         return self.count
 
 # Charger les images des pions
-pion_noir = pygame.image.load("assets/BlackToken.png")
-pion_blanc = pygame.image.load("assets/WhiteToken.png")
+pion_noir = pygame.image.load(os.path.join(current_path, "assets/BlackToken.png"))
+pion_blanc = pygame.image.load(os.path.join(current_path, "assets/WhiteToken.png"))
 pion_noir = pygame.transform.scale(pion_noir, (TAILLE_CASE, TAILLE_CASE))
 pion_blanc = pygame.transform.scale(pion_blanc, (TAILLE_CASE, TAILLE_CASE))
 
@@ -288,7 +291,18 @@ def afficher_score():
     score_blanc = sum(row.count("blanc") for row in plateau)
     texte = f"Noir: {score_noir} | Blanc: {score_blanc}"
     surface_texte = font.render(texte, True, (255, 255, 255))
-    fenetre.blit(surface_texte, (10, 10))
+ # Dimensions du rectangle noir derrière le texte
+    rect_largeur = surface_texte.get_width() + 10
+    rect_hauteur = surface_texte.get_height() + 10
+    rect_x = 5
+    rect_y = 5
+
+    # Dessiner le fond noir
+    pygame.draw.rect(fenetre, (50, 50, 50), (rect_x, rect_y, rect_largeur, rect_hauteur))
+
+    # Dessiner le texte
+    fenetre.blit(surface_texte, (rect_x + 5, rect_y + 5))
+   
 
 def afficher_historique():
     """Met à jour l'historique affiché dans l'interface."""
@@ -378,7 +392,7 @@ def main():
                     # Mise à jour de l'affichage
                     afficher_plateau()
                     afficher_score()
-                    afficher_historique()
+                    #afficher_historique()
                     pygame.display.flip()
                     
                 # Attendre avant le prochain coup
